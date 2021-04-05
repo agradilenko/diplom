@@ -5,7 +5,8 @@ import "./Dashboard.scss";
 import { connect } from "react-redux";
 
 import Modal from "./Modal/Modal";
-import {Select} from "antd";
+import { Select } from "antd";
+import {loginUser} from "../../../actions/authActions";
 
 class Dashboard extends Component {
   state = {
@@ -13,6 +14,9 @@ class Dashboard extends Component {
     edit: false,
     name: "",
     id: "",
+    description: "",
+    gost: "",
+    tags: [],
     owner: {},
   };
 
@@ -20,24 +24,22 @@ class Dashboard extends Component {
     this.setState({ modal: !this.state.modal, edit: false });
   };
 
-  toggleEditModal = (name, id, owner, e) => {
+  toggleEditModal = ( name, id, description, gost, tags, owner, e) => {
     e.stopPropagation();
-
     this.setState({
       modal: !this.state.modal,
       edit: !this.state.edit,
       name: name,
       id: id,
+      description: description,
+      gost: gost,
+      tags: tags,
       owner: owner,
     });
   };
 
   render() {
     const { tzs } = this.props.tzs;
-    const { Option } = Select;
-
-    // const { gosts } = this.props.gosts;
-    // console.log(gosts);
     let content;
 
     let tzData = tzs.sort().map((tz) => (
@@ -47,18 +49,20 @@ class Dashboard extends Component {
         onClick={() => this.props.history.push(`/projects/${tz._id}`)}
       >
         <div className="project-name">{tz.name}</div>
-        {/*<div*/}
-        {/*  className="project-info-button"*/}
-        {/*  onClick={this.toggleEditModal.bind(*/}
-        {/*    this,*/}
-        {/*    tz.name,*/}
-        {/*    project.teamMembers,*/}
-        {/*    project._id,*/}
-        {/*    project.owner*/}
-        {/*  )}*/}
-        {/*>*/}
-        {/*  Редактировать информацию о ТЗ*/}
-        {/*</div>*/}
+        <div
+          className="project-info-button"
+          onClick={this.toggleEditModal.bind(
+            this,
+            tz.name,
+            tz._id,
+            tz.description,
+            tz.gost,
+            tz.tags,
+            tz.owner
+          )}
+        >
+          Редактировать информацию о ТЗ
+        </div>
         <div className="project-info-button">Перейти в ТЗ</div>
       </div>
     ));
@@ -76,6 +80,10 @@ class Dashboard extends Component {
               modal={this.state.modal}
               edit={this.state.edit}
               name={this.state.name}
+              description={this.state.description}
+              gost={this.state.gost = "60696d837244ac8e63f6a2ce" ? "ГОСТ" +
+                " 34.602-89": "ГОСТ-19.201-78" }
+              selectedtags={this.state.tags}
               id={this.state.id}
               owner={this.state.owner}
             />

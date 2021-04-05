@@ -59,10 +59,45 @@ router.post(
       name: req.body.name,
       description: req.body.description,
       gost: req.body.gost,
-      tags: req.body.tags
+      tags: req.body.tags,
     });
 
     NEW_TZ.save().then((tz) => res.json(tz));
+  }
+);
+
+// @route PATCH api/tzs/update
+// @desc Update an existing tz
+// @access Private
+router.patch(
+  "/update",
+  passport.authenticate("jwt", { session: false }),
+  (req, res) => {
+    let tzFields = {};
+
+    tzFields.name = req.body.name;
+    tzFields.description = req.body.description;
+    tzFields.gost = req.body.gost;
+    tzFields.tags = req.body.tags;
+
+    Tz.findOneAndUpdate({ _id: req.body.id }, { $set: tzFields }, { new: true })
+      .then((tz) => {
+        res.json(tz);
+      })
+      .catch((err) => console.log(err));
+  }
+);
+
+// @route DELETE api/tzs/delete/:id
+// @desc Delete an existing tz
+// @access Private
+router.delete(
+  "/delete/:id",
+  passport.authenticate("jwt", { session: false }),
+  (req, res) => {
+    Tz.findById(req.params.id).then((tz) => {
+      tz.remove().then(() => res.json({ success: true }));
+    });
   }
 );
 

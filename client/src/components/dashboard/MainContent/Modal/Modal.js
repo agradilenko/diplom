@@ -23,7 +23,7 @@ import {
 import moment from "moment";
 
 import "./Modal.scss";
-import { createTz } from "../../../../actions/tzActions";
+import { createTz, updateTz } from "../../../../actions/tzActions";
 import { getGosts } from "../../../../actions/gostActions";
 import { createTag, getTags } from "../../../../actions/tagsActions";
 
@@ -46,8 +46,10 @@ class Modal extends Component {
   componentWillReceiveProps(nextProps) {
     if (nextProps.edit) {
       this.setState({
-        projectName: nextProps.name,
-        members: nextProps.members,
+        tzName: nextProps.name,
+        tzDescription: nextProps.description,
+        tzGost: nextProps.gost,
+        tzTags: nextProps.selectedtags,
       });
     } else if (nextProps.editTask) {
       this.setState({
@@ -93,17 +95,22 @@ class Modal extends Component {
     this.onClose();
   };
 
-  updateProject = async (id) => {
-    let project = {
+  updateTz = async (id) => {
+    console.log(this.props.id)
+    let tz = {
       id: this.props.id,
-      projectName: this.state.projectName,
-      members: this.state.members,
+      name: this.state.tzName,
+      description: this.state.tzDescription,
+      gost: (this.state.tzGost = "ГОСТ 34.602-89"
+        ? "60696d837244ac8e63f6a2ce"
+        : "60696da57244ac8e63f6a2cf"),
+      tags: this.state.tzTags,
     };
 
-    await this.props.updateProject(project);
+    await this.props.updateTz(tz);
 
     this.onClose();
-    window.location.reload();
+    // window.location.reload();
   };
 
   onEditorStateChange = (editorState) => {
@@ -248,8 +255,6 @@ class Modal extends Component {
       { value: "60696d837244ac8e63f6a2ce", label: "ГОСТ 34.602-89" },
       { value: "60696da57244ac8e63f6a2cf", label: "ГОСТ-19.201-78" },
     ];
-    console.log(gosts);
-    console.log(tags);
     if (!this.props.modal) {
       return null;
     }
@@ -536,75 +541,50 @@ class Modal extends Component {
     // Edit project modal
     else if (this.props.edit) {
       return (
-        <div className="modal">
+        <div className="modal" style={{ height: "700px" }}>
           <span className="close-modal" onClick={this.onClose}>
             &times;
           </span>
-          <h1 className="header">Edit Project Info</h1>
+          <h1 className="header">
+            Редактировать информацию о техническом задании
+          </h1>
           <p className="created-by">
-            Created by {this.props.owner.name} ({this.props.owner.email})
+            Создано: {this.props.owner.name} ({this.props.owner.email})
           </p>
           <div className="form-group">
-            <label>
-              <div className="form-label">Project Name (required)</div>
-              <input
-                onChange={this.onChange}
-                value={this.state.projectName}
-                id="projectName"
-                type="text"
-                placeholder={"My Awesome Project"}
-                className="form-input"
-              />
-            </label>
-          </div>
-          <div className="form-label">Add team members (optional)</div>
-          <button className="main-btn add-members" onClick={this.addMember}>
-            Add another member
-          </button>
-          <div className="members-edit">
-            {members.map((val, id) => {
-              let memberId = `member-${id}`,
-                emailId = `email-${id}`;
-              return (
-                <div className="split" key={id}>
-                  <label className="form-label" htmlFor={memberId}>
-                    Name (required for teams)
-                    <input
-                      type="text"
-                      name="name"
-                      data-id={id}
-                      id={memberId}
-                      value={members[id].name}
-                      className="form-input"
-                      onChange={this.onChange}
-                    />
-                  </label>
-                  <label className="form-label split-email" htmlFor={emailId}>
-                    Email (required for teams)
-                    <input
-                      type="text"
-                      name="email"
-                      data-id={id}
-                      id={emailId}
-                      value={members[id].email}
-                      className="form-input"
-                      onChange={this.onChange}
-                    />
-                  </label>
-                  <span
-                    className="delete"
-                    onClick={this.deleteMember.bind(this, id)}
-                  >
-                    REMOVE
-                  </span>
-                </div>
-              );
-            })}
+            <div className="form-label">Название технического задания</div>
+            <input
+              onChange={this.onChange}
+              value={this.state.tzName}
+              id="tzName"
+              type="text"
+              placeholder={"Техническое задание..."}
+              className="form-input"
+            />
+            <div className="form-label">Краткое описание</div>
+            <textarea
+              onChange={this.onChange}
+              value={this.state.tzDescription}
+              id="tzDescription"
+              placeholder="Введите краткое описание создаваемого технического задания"
+              className="form-input"
+              style={{ minHeight: "100px" }}
+            />
+            <div className="form-label">ГОСТ</div>
+            <input
+              disabled
+              onChange={this.onChange}
+              value={this.state.tzGost}
+              id="tzName"
+              type="text"
+              placeholder={"ГОСТ..."}
+              className="form-input"
+            />
           </div>
           <div>
             <button
               className="main-btn update-project"
-              onClick={this.updateProject.bind(this, this.props.id)}
+              onClick={this.updateTz.bind(this, this.props.id)}
             >
               Update Project
             </button>
@@ -630,43 +610,37 @@ class Modal extends Component {
           </span>
           <h1 className="header">Создайте техническое задание</h1>
           <div className="form-group">
-            <label>
-              <div className="form-label">Название технического задания</div>
-              <input
-                onChange={this.onChange}
-                value={this.state.tzName}
-                id="tzName"
-                type="text"
-                placeholder="My Awesome Project"
-                className="form-input"
-              />
-              <div className="form-label">Краткое описание</div>
-              <textarea
-                onChange={this.onChange}
-                value={this.state.tzDescription}
-                id="tzDescription"
-                placeholder="Введите краткое описание создаваемого технического задания"
-                className="form-input"
-                style={{ minHeight: "100px" }}
-              />
-              <div className="form-label"> </div>
-              Выберите Государственный стандарт, по которому будет
-              проектироваться ТЗ
-              <div>
-                <Select
-                  onChange={(value) => this.setState({ tzGost: value.value })}
-                  options={options}
-                />
-              </div>
-              <div>
-                <div className="form-label">Теги технического задания</div>
-                <CreatableSelect
-                  onChange={this.handleTagsChange}
-                  isMulti
-                  options={tags}
-                />
-              </div>
-            </label>
+            <div className="form-label">Название технического задания</div>
+            <input
+              onChange={this.onChange}
+              value={this.state.tzName}
+              id="tzName"
+              type="text"
+              placeholder="My Awesome Project"
+              className="form-input"
+            />
+            <div className="form-label">Краткое описание</div>
+            <textarea
+              onChange={this.onChange}
+              value={this.state.tzDescription}
+              id="tzDescription"
+              placeholder="Введите краткое описание создаваемого технического задания"
+              className="form-input"
+              style={{ minHeight: "100px" }}
+            />
+            <div className="form-label"> </div>
+            Выберите Государственный стандарт, по которому будет проектироваться
+            ТЗ
+            <Select
+              onChange={(value) => this.setState({ tzGost: value.value })}
+              options={options}
+            />
+            <div className="form-label">Теги технического задания</div>
+            <CreatableSelect
+              onChange={this.handleTagsChange}
+              isMulti
+              options={tags}
+            />
           </div>
           <div>
             <button className="main-btn create-project" onClick={this.createTz}>
@@ -689,6 +663,7 @@ const mapStateToProps = (state) => ({
 
 export default connect(mapStateToProps, {
   createTz,
+  updateTz,
   getGosts,
   createTag,
   getTags,
