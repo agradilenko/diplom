@@ -23,9 +23,10 @@ import {
 import moment from "moment";
 
 import "./Modal.scss";
-import { createTz, updateTz } from "../../../../actions/tzActions";
+import { createTz, deleteTz, updateTz } from "../../../../actions/tzActions";
 import { getGosts } from "../../../../actions/gostActions";
 import { createTag, getTags } from "../../../../actions/tagsActions";
+import { createPart, getPart } from "../../../../actions/partsActions";
 
 class Modal extends Component {
   state = {
@@ -36,10 +37,16 @@ class Modal extends Component {
     tzTags: [],
     members: [{ name: "", email: "" }],
     taskName: "",
+    partName: "",
+    tzid: "",
+    part: "",
+    partbygostId: "",
     assignee: "",
     monthDue: "",
     dayDue: "",
     taskId: "",
+    rating: "",
+    number_of_uses: "",
     editorState: EditorState.createEmpty(),
   };
 
@@ -52,9 +59,16 @@ class Modal extends Component {
         tzTags: nextProps.selectedtags,
       });
     } else if (nextProps.editTask) {
-      this.setState({
-        taskName: nextProps.taskName,
-      });
+      this.setState(
+        {
+          partName: nextProps.partName,
+          tzid: nextProps.tzid,
+          partbygostId: nextProps.partbygostId,
+        },
+        () => {
+          // this.props.getPart(this.state.tzid, this.state.partbygostId);
+        }
+      );
     }
   }
 
@@ -96,7 +110,6 @@ class Modal extends Component {
   };
 
   updateTz = async (id) => {
-    console.log(this.props.id)
     let tz = {
       id: this.props.id,
       name: this.state.tzName,
@@ -119,8 +132,8 @@ class Modal extends Component {
     });
   };
 
-  deleteProject = (id) => {
-    this.props.deleteProject(id, this.props.history);
+  deleteTz = (id) => {
+    this.props.deleteTz(id, this.props.history);
     this.onClose();
   };
 
@@ -136,11 +149,24 @@ class Modal extends Component {
       tzDescription: "",
       tzGost: "",
       tzTgs: "",
+      editorState: "",
     });
   };
 
   onSelectChange = (e) => {
     this.setState({ [e.target.id]: e.target.value });
+  };
+
+  createPart = (e) => {
+    e.preventDefault();
+    const data = {
+      tz: this.props.tzs.tz._id,
+      tz_by_gost: this.props.partbygostId,
+      content: JSON.stringify(this.state.editorState),
+      rating: this.state.rating,
+      number_of_uses: this.state.number_of_uses,
+    };
+    this.props.createPart(data);
   };
 
   createTask = (e) => {
@@ -251,6 +277,7 @@ class Modal extends Component {
     const { editorState } = this.state;
     const { tags } = this.props;
     const { gosts } = this.props.gosts;
+    // const { part } = this.props.parts;
     const options = [
       { value: "60696d837244ac8e63f6a2ce", label: "ГОСТ 34.602-89" },
       { value: "60696da57244ac8e63f6a2cf", label: "ГОСТ-19.201-78" },
@@ -377,76 +404,19 @@ class Modal extends Component {
       );
     }
 
-    // Edit Task Modal
+    // Create / Edit Part Modal
     else if (this.props.editTask) {
-      const { teamMembers } = this.props.projects.project;
+      // const { teamMembers } = this.props.projects.project;
       const { name, email } = this.props.auth.user;
-
-      const { assignee, dateDue, taskId } = this.props;
-      let assigneeName;
-
-      let assignedMonth = moment(dateDue).month() + 1;
-      let assignedDay = dateDue.split(" ")[1];
-
-      // Find name from email
-      teamMembers.forEach((member) => {
-        if (member.email === assignee) {
-          assigneeName = member.name;
-        } else if (assignee) {
-          assigneeName = name + " (You)";
-        }
-      });
-
-      // Assignee dropdown in Modal
-      let membersOptions = teamMembers.map((member, index) => {
-        if (member.name !== assigneeName) {
-          return (
-            <option key={member._id} value={member.email}>
-              {member.name}
-            </option>
-          );
-        }
-        return null;
-      });
-
-      // Due date dropdown in Modal
-      const MONTHS = new Array(12).fill(1);
-      const DAYS = new Array(31).fill(1);
-
-      let monthsOptions = MONTHS.map((month, i) => {
-        return (
-          <option key={i} value={i + 1}>
-            {i < 9 && "0"}
-            {i + 1}
-          </option>
-        );
-      });
-
-      let daysOptions = DAYS.map((day, i) => (
-        <option key={i} value={i + 1}>
-          {i < 9 && "0"}
-          {i + 1}
-        </option>
-      ));
-
+      // this.props.getPart(this.state.tzid, this.state.partbygostId);
       return (
-        <form className="modal">
+        <form className="modal" style={{ height: "750px" }}>
           <span className="close-modal" onClick={this.onClose}>
             &times;
           </span>
-          <h1 className="header">Edit task</h1>
+          <h1 className="header">{this.state.partName}</h1>
           <div className="form-group">
             <label>
-              <div className="form-label">Task Name (required)</div>
-              <input
-                required
-                onChange={this.onChange}
-                value={this.state.taskName}
-                id="taskName"
-                type="text"
-                placeholder={"What is the task?"}
-                className="form-input"
-              />
               <Editor
                 editorState={editorState}
                 wrapperClassName="demo-wrapper"
@@ -455,90 +425,26 @@ class Modal extends Component {
               />
             </label>
           </div>
-          <div className="form-group">
-            <div className="split">
-              <label>
-                <div className="form-label">Assignee</div>
-                <select
-                  onChange={this.onSelectChange}
-                  value={this.state.assignee}
-                  id="assignee"
-                  type="text"
-                  className="form-input task-input-split"
-                >
-                  {!assignee && (
-                    <option disabled value="">
-                      Assign to
-                    </option>
-                  )}
-                  {assignee && <option value={assignee}>{assigneeName}</option>}
-                  {assigneeName !== name + " (You)" && (
-                    <option value={email}>{name + " (You)"}</option>
-                  )}
-                  {membersOptions}
-                </select>
-              </label>
-              <label>
-                <div className="form-label">Due Date</div>
-                <div className="split">
-                  <select
-                    required={this.state.dayDue ? true : false}
-                    onChange={this.onSelectChange}
-                    value={
-                      this.state.monthDue || parseInt(assignedMonth).toString()
-                    }
-                    id="monthDue"
-                    type="text"
-                    className="form-input task-input-split month-due"
-                  >
-                    {!dateDue && (
-                      <option disabled value="">
-                        Month
-                      </option>
-                    )}
-                    {monthsOptions}
-                  </select>
-                  <select
-                    required={this.state.monthDue ? true : false}
-                    onChange={this.onSelectChange}
-                    value={
-                      this.state.dayDue || parseInt(assignedDay).toString()
-                    }
-                    id="dayDue"
-                    type="text"
-                    className="form-input task-input-split"
-                  >
-                    {!dateDue && (
-                      <option disabled value="">
-                        Day
-                      </option>
-                    )}
-                    {daysOptions}
-                  </select>
-                </div>
-              </label>
-            </div>
-          </div>
           <div>
             <button
               className="main-btn update-project"
               type="button"
-              onClick={this.updateTask.bind(this, taskId)}
+              onClick={this.createPart}
             >
-              Update Task
+              Сохранить информацию
             </button>
             <button
               className="main-btn delete-project"
-              onClick={this.deleteTask.bind(this, taskId)}
+              // onClick={this.deleteTask.bind(this, taskId)}
             >
-              Delete Task
+              Очистить поле ввода
             </button>
           </div>
         </form>
       );
     }
 
-    // Edit project modal
+    // Edit tz info modal
     else if (this.props.edit) {
       return (
         <div className="modal" style={{ height: "700px" }}>
@@ -580,20 +486,27 @@ class Modal extends Component {
               placeholder={"ГОСТ..."}
               className="form-input"
             />
+            <div className="form-label">Теги технического задания</div>
+            <CreatableSelect
+              onChange={console.log(this.state.tzTags)}
+              defaultValue={this.state.tzTags}
+              isMulti
+              options={tags}
+            />
           </div>
           <div>
             <button
               className="main-btn update-project"
               onClick={this.updateTz.bind(this, this.props.id)}
             >
-              Update Project
+              Обновить информацию о техническом задании
             </button>
             {this.props.owner.id === this.props.auth.user.id ? (
               <button
                 className="main-btn delete-project"
-                onClick={this.deleteProject.bind(this, this.props.id)}
+                onClick={this.deleteTz.bind(this, this.props.id)}
               >
-                Delete Project
+                Удалить техническое задание
               </button>
             ) : null}
           </div>
@@ -601,7 +514,7 @@ class Modal extends Component {
       );
     }
 
-    // Create project modal
+    // Create TZ modal
     else
       return (
         <div className="modal" style={{ minHeight: "700px" }}>
@@ -659,14 +572,18 @@ const mapStateToProps = (state) => ({
   tzs: state.tzs,
   gosts: state.gosts,
   tags: state.tags,
+  part: state.parts.part,
 });
 
 export default connect(mapStateToProps, {
   createTz,
   updateTz,
+  deleteTz,
   getGosts,
   createTag,
   getTags,
+  createPart,
+  getPart,
   createProject,
   updateProject,
   deleteProject,

@@ -1,14 +1,15 @@
 import React, { Component } from "react";
 import { connect } from "react-redux";
-import { getProject } from "../../../../actions/projectsActions";
-import { getTasks, deleteTask } from "../../../../actions/taskActions";
+import { deleteTask } from "../../../../actions/taskActions";
 
 import Spinner from "../../../common/Spinner";
 import Modal from "../Modal/Modal";
 
 import "../MainContent.scss";
 import "./Project.scss";
-import {getTz} from "../../../../actions/tzActions";
+import { getTz } from "../../../../actions/tzActions";
+import {deletePart, getPart, getParts} from "../../../../actions/partsActions";
+import { getPartsByGost } from "../../../../actions/partsbygostActions";
 
 class Project extends Component {
   state = {
@@ -18,197 +19,188 @@ class Project extends Component {
     task: false,
     name: "",
     members: [],
+    tzid: "",
     id: "",
     owner: {},
     tasks: [],
+    parts: [],
+    partbygostId: "",
     date: "",
     taskName: "",
     assignee: "",
+    partName: "",
     taskId: "",
-    dateDue: ""
+    dateDue: "",
+    description: "",
+    gost: "",
+    tags: [],
   };
 
-  toggleModal = e => {
+  toggleModal = (e) => {
     this.setState({
       modal: !this.state.modal,
       edit: false,
       task: false,
-      editTask: false
+      editTask: false,
     });
   };
 
-  toggleEditModal = (name, members, id, owner, e) => {
+  toggleEditModal = (name, id, description, gost, tags, owner, e) => {
     this.setState({
       modal: !this.state.modal,
       edit: !this.state.edit,
       name: name,
-      members: members,
       id: id,
-      owner: owner
+      description: description,
+      gost: gost,
+      tags: tags,
+      owner: owner,
     });
   };
 
-  toggleTaskModal = e => {
+  toggleTaskModal = (e) => {
     this.setState({
       modal: !this.state.modal,
-      task: !this.state.task
+      task: !this.state.task,
     });
   };
 
-  toggleEditTaskModal = (taskName, assignee, dateDue, id, e) => {
+  toggleEditTaskModal = (partname, id, tzid, e) => {
     this.setState({
       modal: !this.state.modal,
       editTask: !this.state.editTask,
-      taskName: taskName,
-      assignee: assignee,
-      taskId: id,
-      dateDue: dateDue
+      partName: partname,
+      partbygostId: id,
+      tzid: tzid,
+      // taskName: taskName,
+      // assignee: assignee,
+      // taskId: id,
+      // dateDue: dateDue,
     });
   };
 
   componentDidMount() {
-    this.props.getProject(this.props.match.params.project);
-    this.props.getTasks(this.props.match.params.project);
-    this.props.getTz(this.props.match.params.tz)
+    // this.props.getProject(this.props.match.params.project);
+    // this.props.getTasks(this.props.match.params.project);
+    this.props.getTz(this.props.match.params.tz);
+    this.props.getPartsByGost(this.props.match.params.gost);
+    console.log(this.state);
+    // this.props.getParts(this.props.match.params.tz);
   }
 
-  // componentDidUpdate(prevProps) {
-  //   if (this.props.match.params.project !== prevProps.match.params.project) {
-  //     this.props.getProject(this.props.match.params.project);
-  //     this.props.getTasks(this.props.match.params.project);
-  //   }
-  // }
+  componentDidUpdate(prevProps) {
+    if (this.props.match.params.tz !== prevProps.match.params.tz) {
+      this.props.getTz(this.props.match.params.tz);
+      // this.props.getPartsByGost("60696da57244ac8e63f6a2cf")
+    }
+    // if(this.)
+  }
 
-  // onChange = async e => {
-  //   await this.setState({ tasks: this.props.tasks.tasks });
-  //
-  //   let tasks = await [...this.state.tasks];
-  //
-  //   tasks[e.target.id].taskName = await e.target.value;
-  //
-  //   await this.setState({ tasks });
-  // };
+  onChange = async (e) => {
+    await this.setState({ tasks: this.props.tasks.tasks });
 
-  // deleteTask = id => {
-  //   this.props.deleteTask(id);
-  // };
+    let tasks = await [...this.state.tasks];
+
+    tasks[e.target.id].taskName = await e.target.value;
+
+    await this.setState({ tasks });
+  };
+
+  deleteTask = (id) => {
+    this.props.deleteTask(id);
+  };
+
+  getBla = (part) => {
+    this.toggleEditTaskModal(
+      part.name,
+      part.id,
+      this.props.tz._id
+      // task.dateDue,
+      // task._id
+    )
+    this.props.getPart(this.props.tzs.tz._id, part.id)
+  }
 
   render() {
-    const { tasks } = this.props.tasks;
+    const { parts_by_gost } = this.props;
+    const { tz } = this.props.tzs;
+    console.log(tz);
+    // const
 
-    let tasksList = tasks.map((task, index) => (
-      <div className="task-input" key={task._id}>
-        <i
-          className="material-icons check-task"
-          onClick={this.deleteTask.bind(this, task._id)}
-        >
-          check_circle
-        </i>
+    let partsList = parts_by_gost.map((part, index) => (
+      <div className="task-input" key={part.id}>
         <span
-          onClick={this.toggleEditTaskModal.bind(
-            this,
-            task.taskName,
-            task.assignee,
-            task.dateDue,
-            task._id
-          )}
+          onClick={this.getBla.bind(this, part)}
+          // onClick={this.props.getPart.bind(this, tz._id, part.id)}
           id={index}
           name="task"
           className="project-task"
         >
-          {task.taskName}
-        </span>
-        <span
-          onClick={this.toggleEditTaskModal.bind(
-            this,
-            task.taskName,
-            task.assignee,
-            task.dateDue,
-            task._id
-          )}
-          className={!task.assignee ? "task-info muted" : "task-info"}
-        >
-          {task.assignee === this.props.auth.user.email
-            ? "You"
-            : task.assignee || "Unassigned"}
-        </span>
-        <span
-          onClick={this.toggleEditTaskModal.bind(
-            this,
-            task.taskName,
-            task.assignee,
-            task.dateDue,
-            task._id
-          )}
-          className={
-            task.dateDue === "Date undefined" ? "task-info muted" : "task-info"
-          }
-        >
-          {task.dateDue === "Date undefined" ? "Not Set" : task.dateDue}
+          {part.name}
         </span>
       </div>
     ));
 
     if (
-      this.props.project &&
-      this.props.project.teamMembers &&
-      !this.props.projects.projectLoading &&
-      !this.props.tasks.tasksLoading
+      this.props.tz &&
+      !this.props.tzs.tzLoading
+      // !this.props.parts.partsLoading
     ) {
-      const { project } = this.props;
+      const { tz } = this.props;
 
       return (
         <div className="main-content">
-          <h1 className="project-header">{project.name}</h1>
+          <h1 className="project-header">{tz.name}</h1>
           <button
             onClick={this.toggleEditModal.bind(
               this,
-              project.name,
-              project.teamMembers,
-              project._id,
-              project.owner
+              tz.name,
+              tz._id,
+              tz.description,
+              tz.gost,
+              tz.tags,
+              tz.owner
             )}
             className="main-btn center-btn"
           >
-            Edit Project Info
+            Редактировать информацию о техническом задании
           </button>
 
-          <div className="modal-wrapper">
+          <div className="modal-wrapper test">
             <Modal
               onClose={this.toggleModal}
               modal={this.state.modal}
               edit={this.state.edit}
               task={this.state.task}
               editTask={this.state.editTask}
+              partName={this.state.partName}
+              gost={
+                (this.state.gost = "60696d837244ac8e63f6a2ce"
+                  ? "ГОСТ" + " 34.602-89"
+                  : "ГОСТ-19.201-78")
+              }
+              partbygostId={this.state.partbygostId}
+              selectedtags={this.state.tags}
               name={this.state.name}
+              description={this.state.description}
               members={this.state.members}
+              tzid={this.state.tzid}
               id={this.state.id}
               owner={this.state.owner}
               taskName={this.state.taskName}
               assignee={this.state.assignee}
               dateDue={this.state.dateDue}
               taskId={this.state.taskId}
+              part={this.state.parts}
             />
           </div>
           <div className="tasks-container">
-            <div className="projects-first-row">
-              <button
-                className="main-btn add-btn"
-                onClick={this.toggleTaskModal}
-              >
-                Add task
-              </button>
-              <div className="projects-column-headers">
-                <p>Assignee</p>
-                <p>Due</p>
-              </div>
-            </div>
-            <div className="project-tasks">{tasksList}</div>
+            <div className="projects-first-row">Содержание</div>
+            <div className="project-tasks">{partsList}</div>
           </div>
         </div>
       );
     }
-
     return (
       <div className="project-spinner">
         <Spinner />
@@ -217,16 +209,22 @@ class Project extends Component {
   }
 }
 
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
   auth: state.auth,
   project: state.projects.project,
   projects: state.projects,
   tasks: state.tasks,
   tz: state.tzs.tz,
-  tzs: state.tzs
+  tzs: state.tzs,
+  parts_by_gost: state.partsByGost.parts_by_gost,
+  parts: state.parts,
 });
 
-export default connect(
-  mapStateToProps,
-  { getProject, getTasks, deleteTask, getTz }
-)(Project);
+export default connect(mapStateToProps, {
+  deleteTask,
+  getTz,
+  getPart,
+  getPartsByGost,
+  getParts,
+  deletePart,
+})(Project);

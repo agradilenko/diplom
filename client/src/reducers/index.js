@@ -6,6 +6,8 @@ import tasksReducer from "./tasksReducer";
 import tzsReducer from "./tzsReducer";
 import gostsReducer from "./gostsReducer";
 import tagsReducer from "./tagsReducer";
+import tzspartsReducer from "./tzspartsReducer";
+import tzspartsByGostReducer from "./tzspartsByGostReducer";
 
 export default combineReducers({
   auth: authReducer,
@@ -14,5 +16,7 @@ export default combineReducers({
   tasks: tasksReducer,
   tzs: tzsReducer,
   gosts: gostsReducer,
-  tags: tagsReducer
+  tags: tagsReducer,
+  parts: tzspartsReducer,
+  partsByGost: tzspartsByGostReducer
 });

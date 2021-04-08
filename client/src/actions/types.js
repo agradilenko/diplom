@@ -35,3 +35,15 @@ export const GET_GOSTS = "GET_GOSTS";
 export const GET_TAGS = "GET_TAGS";
 export const CREATE_TAG = "CREATE_TAG";
 
+// Tz Parts
+export const CREATE_PART = "CREATE_PART";
+export const UPDATE_PART = "UPDATE_PART";
+export const DELETE_PART = "DELETE_PART";
+export const GET_PARTS = "GET_PARTS";
+export const GET_PART = "GET_PART";
+export const PARTS_LOADING = "PARTS_LOADING";
+export const PART_LOADING = "PART_LOADING";
+
+// TZ BY GOST PARTS
+export const GET_GOST_PARTS = "GET_GOST_PARTS";
+export const GOST_PARTS_LOADING = "GOST_PARTS_LOADING";

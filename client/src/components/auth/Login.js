@@ -60,7 +60,6 @@ class Login extends Component {
 
   render() {
     const { errors } = this.state;
-    console.log(errors)
     return (
       <div className="base-wrapper">
         <div className="auth-header">Sign In</div>

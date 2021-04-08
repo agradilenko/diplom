@@ -11,7 +11,7 @@ const gosts = require("./routes/api/gosts");
 const tzpartsbygost = require("./routes/api/tz_parts_by_gosts");
 const tags = require("./routes/api/tags");
 const tzs = require("./routes/api/tzs");
-
+const tzparts = require("./routes/api/tz_parts")
 const app = express();
 
 // Bodyparser middleware
@@ -43,6 +43,7 @@ app.use("/api/users", users);
 app.use("/api/projects", projects);
 app.use("/api/tasks", tasks);
 app.use("/api/gosts", gosts);
+app.use("/api/tz_parts", tzparts);
 app.use("/api/tz_parts_by_gosts", tzpartsbygost);
 app.use("/api/tzs", tzs);
 app.use("/api/tags", tags);

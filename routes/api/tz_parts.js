@@ -17,6 +17,21 @@ router.get(
   }
 );
 
+// @route GET api/tz_parts/:id/:part_by_gost
+// @desc Get part for specific tz
+// @access Private
+router.get(
+  "/:id/:part_by_gost",
+  // passport.authenticate("jwt", { session: false }),
+  (req, res) => {
+    let id = req.params.id;
+    let part_by_gost = req.params.part_by_gost;
+    TzPart.find({ tz: id, tz_by_gost: part_by_gost }).then((parts) =>
+      res.json(parts)
+    );
+  }
+);
+
 // @route POST api/tz_parts/create
 // @desc Create a new part
 // @access Private
@@ -45,12 +60,10 @@ router.delete(
   "/delete/:id",
   //passport.authenticate("jwt", { session: false }),
   (req, res) => {
-    TzPart.findById(req.params.id).then(part => {
+    TzPart.findById(req.params.id).then((part) => {
       part.remove().then(() => res.json({ success: true }));
     });
   }
 );
 
-
-
-module.exports = router
+module.exports = router;

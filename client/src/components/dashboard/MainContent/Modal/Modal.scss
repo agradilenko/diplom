@@ -10,7 +10,7 @@
   visibility: visible;
   position: fixed;
   top: 8%;
-  height: 550px;
+  min-height: 550px;
   z-index: 1000;
   box-shadow: 0 1rem 2rem rgba(0, 0, 0, 0.1);
 }
@@ -155,3 +155,11 @@
     color: $red;
   }
 }
+
+.DraftEditor-editorContainer {
+  background-color: #fafafa;
+  min-height: 250px;
+  max-height: 400px;
+  overflow: auto;
+}
+

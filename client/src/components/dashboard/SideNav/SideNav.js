@@ -29,9 +29,9 @@ class SideNav extends Component {
   render() {
     const { tzs } = this.props.tzs;
 
-    let projectData = tzs.sort().map(tz => (
+    let tzData = tzs.sort().map(tz => (
       <li className="project-listing" key={tz._id}>
-        <Link to={`/projects/${tz._id}`}>{tz.name}</Link>
+        <Link to={`/tzs/${tz._id}`}>{tz.name}</Link>
       </li>
     ));
 
@@ -68,7 +68,7 @@ class SideNav extends Component {
           <li>
             <h4 className="side-projects-header">Технические задания</h4>
           </li>
-          <div className="project-listings">{projectData}</div>
+          <div className="project-listings">{tzData}</div>
         </ul>
       </nav>
     );

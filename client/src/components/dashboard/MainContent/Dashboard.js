@@ -46,7 +46,7 @@ class Dashboard extends Component {
       <div
         key={tz._id}
         className="project-icon"
-        onClick={() => this.props.history.push(`/projects/${tz._id}`)}
+        onClick={() => this.props.history.push(`/tzs/${tz._id}/${tz.gost}`)}
       >
         <div className="project-name">{tz.name}</div>
         <div

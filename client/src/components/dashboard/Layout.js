@@ -40,7 +40,7 @@ class Layout extends Component {
             <Switch>
               <Route exact path="/dashboard" tzs={tzs} component={Dashboard} />
               <Route exact path="/tasks" projects={tzs} component={Tasks} />
-              <Route exact path="/projects/:project" component={Project} />
+              <Route exact path="/tzs/:tz/:gost" component={Project} />
               <Route component={NotFound} />
             </Switch>
           </div>

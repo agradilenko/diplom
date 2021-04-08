@@ -14,6 +14,10 @@
 .project-spinner {
   margin-bottom: 4rem;
 }
+.DraftEditor-editorContainer {
+  background-color: #fafafa;
+  min-height: 250px;
+}
 
 .center-btn {
   display: flex;
@@ -59,8 +63,8 @@
     width: 92.5%;
     outline: none;
     border: none;
-    height: 36px;
-    font-size: 12px;
+    height: 50px;
+    font-size: 20px;
     display: flex;
     align-items: center;
     padding-left: 1rem;
@@ -75,7 +79,7 @@
   div {
     width: 100%;
     border: 1px solid $gray;
-    height: 40px;
+    height: 60px;
     line-height: 1.5em;
     outline: 0;
     font-size: 16px;
@@ -118,8 +122,12 @@
 }
 
 .projects-first-row {
-  display: flex;
   height: 75px;
+  font-family: $code;
+  font-size: 24px;
+  font-weight: 700;
+  color: #212121;
+  text-align: center;
 }
 
 .muted {
