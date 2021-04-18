@@ -14,7 +14,7 @@ const TzPartSchema = new Schema({
     required: true,
   },
   content: {
-    type: {},
+    type: Object,
     required: true,
   },
   rating: {

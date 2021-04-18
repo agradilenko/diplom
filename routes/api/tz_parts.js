@@ -53,6 +53,30 @@ router.post(
   }
 );
 
+// @route PATCH api/tz_parts/update
+// @desc Update an existing part
+// @access Private
+router.patch(
+  "/update",
+  passport.authenticate("jwt", { session: false }),
+  (req, res) => {
+    let partFields = {};
+
+    partFields.tz = req.body.tz;
+    partFields.tz_by_gost = req.body.tz_by_gost;
+    partFields.content = req.body.content;
+    partFields.rating = req.body.rating;
+    partFields.number_of_uses = req.body.number_of_uses;
+
+
+    TzPart.findOneAndUpdate({ _id: req.body.id }, { $set: partFields }, { new: true })
+      .then((tz) => {
+        res.json(tz);
+      })
+      .catch((err) => console.log(err));
+  }
+);
+
 // @route POST api/tz_parts/delete
 // @desc Delete an existing part
 // @access Private

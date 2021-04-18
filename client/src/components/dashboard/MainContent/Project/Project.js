@@ -24,6 +24,7 @@ class Project extends Component {
     owner: {},
     tasks: [],
     parts: [],
+    part: [],
     partbygostId: "",
     date: "",
     taskName: "",
@@ -84,7 +85,6 @@ class Project extends Component {
     // this.props.getTasks(this.props.match.params.project);
     this.props.getTz(this.props.match.params.tz);
     this.props.getPartsByGost(this.props.match.params.gost);
-    console.log(this.state);
     // this.props.getParts(this.props.match.params.tz);
   }
 
@@ -110,33 +110,31 @@ class Project extends Component {
     this.props.deleteTask(id);
   };
 
-  getBla = (part) => {
+  getCurrentPartContent = (partT) => {
+    this.props.getPart(this.props.tzs.tz._id, partT.id)
     this.toggleEditTaskModal(
-      part.name,
-      part.id,
+      partT.name,
+      partT.id,
       this.props.tz._id
-      // task.dateDue,
-      // task._id
     )
-    this.props.getPart(this.props.tzs.tz._id, part.id)
   }
 
   render() {
     const { parts_by_gost } = this.props;
     const { tz } = this.props.tzs;
-    console.log(tz);
+
     // const
 
-    let partsList = parts_by_gost.map((part, index) => (
-      <div className="task-input" key={part.id}>
+    let partsList = parts_by_gost.map((partTz, index) => (
+      <div className="task-input" key={partTz.id}>
         <span
-          onClick={this.getBla.bind(this, part)}
+          onClick={this.getCurrentPartContent.bind(this, partTz)}
           // onClick={this.props.getPart.bind(this, tz._id, part.id)}
           id={index}
           name="task"
           className="project-task"
         >
-          {part.name}
+          {partTz.name}
         </span>
       </div>
     ));
@@ -179,6 +177,7 @@ class Project extends Component {
                   ? "ГОСТ" + " 34.602-89"
                   : "ГОСТ-19.201-78")
               }
+              part={this.state.part}
               partbygostId={this.state.partbygostId}
               selectedtags={this.state.tags}
               name={this.state.name}

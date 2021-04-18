@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import { connect } from "react-redux";
 import { withRouter } from "react-router-dom";
-import { EditorState, convertToRaw } from "draft-js";
+import { EditorState, convertToRaw, convertFromRaw } from "draft-js";
 import { Editor } from "react-draft-wysiwyg";
 import draftToHtml from "draftjs-to-html";
 import htmlToDraft from "html-to-draftjs";
@@ -26,7 +26,12 @@ import "./Modal.scss";
 import { createTz, deleteTz, updateTz } from "../../../../actions/tzActions";
 import { getGosts } from "../../../../actions/gostActions";
 import { createTag, getTags } from "../../../../actions/tagsActions";
-import { createPart, getPart } from "../../../../actions/partsActions";
+import {
+  createPart,
+  getPart,
+  updatePart
+} from "../../../../actions/partsActions";
+import Spinner from "../../../common/Spinner";
 
 class Modal extends Component {
   state = {
@@ -64,11 +69,18 @@ class Modal extends Component {
           partName: nextProps.partName,
           tzid: nextProps.tzid,
           partbygostId: nextProps.partbygostId,
-        },
-        () => {
-          // this.props.getPart(this.state.tzid, this.state.partbygostId);
         }
       );
+    }
+    if (nextProps.part && nextProps.part.length !==0) {
+      console.log(nextProps.part)
+      this.setState(
+        {
+          editorState: EditorState.createWithContent(
+            convertFromRaw(JSON.parse(nextProps.part[0].content))
+          )
+        }
+      )
     }
   }
 
@@ -127,6 +139,8 @@ class Modal extends Component {
   };
 
   onEditorStateChange = (editorState) => {
+    const contentState = editorState.getCurrentContent();
+    console.log('content state', convertToRaw(contentState));
     this.setState({
       editorState,
     });
@@ -159,40 +173,37 @@ class Modal extends Component {
 
   createPart = (e) => {
     e.preventDefault();
+
+    const contentState = this.state.editorState.getCurrentContent();
+    let rawdata = JSON.stringify(convertToRaw(contentState));
+
     const data = {
       tz: this.props.tzs.tz._id,
       tz_by_gost: this.props.partbygostId,
-      content: JSON.stringify(this.state.editorState),
+      content: rawdata,
       rating: this.state.rating,
       number_of_uses: this.state.number_of_uses,
     };
     this.props.createPart(data);
   };
 
-  createTask = (e) => {
-    e.preventDefault();
-
-    let fullDate =
-      this.state.monthDue +
-      "-" +
-      this.state.dayDue +
-      "-" +
-      Date().split(" ")[3];
-
-    let momentDate = moment(fullDate, "MM-DD-YYYY")._d.toString().split(" ");
-
-    let finalDate = momentDate[1] + " " + momentDate[2];
+  updatePart = async (id) => {
+    const contentState = this.state.editorState.getCurrentContent();
+    let rawdata = JSON.stringify(convertToRaw(contentState));
 
     const data = {
-      project: this.props.projects.project._id,
-      taskName: this.state.taskName,
-      assignee: this.state.assignee,
-      dateDue: finalDate,
+      id: this.props.part[0]._id,
+      tz: this.props.tzs.tz._id,
+      tz_by_gost: this.props.partbygostId,
+      content: rawdata,
+      rating: this.state.rating,
+      number_of_uses: this.state.number_of_uses,
     };
 
-    this.props.createTask(data);
+    await this.props.updatePart(data);
 
     this.onClose();
+    // window.location.reload();
   };
 
   updateTask = (id) => {
@@ -405,43 +416,88 @@ class Modal extends Component {
     }
 
     // Create / Edit Part Modal
-    else if (this.props.editTask) {
-      // const { teamMembers } = this.props.projects.project;
-      const { name, email } = this.props.auth.user;
-      // this.props.getPart(this.state.tzid, this.state.partbygostId);
-      return (
-        <form className="modal" style={{ height: "750px" }}>
-          <span className="close-modal" onClick={this.onClose}>
-            &times;
-          </span>
-          <h1 className="header">{this.state.partName}</h1>
-          <div className="form-group">
-            <label>
-              <Editor
-                editorState={editorState}
-                wrapperClassName="demo-wrapper"
-                editorClassName="demo-editor"
-                onEditorStateChange={this.onEditorStateChange}
-              />
-            </label>
-          </div>
-          <div>
-            <button
-              className="main-btn update-project"
-              type="button"
-              onClick={this.createPart}
-            >
-              Сохранить информацию
-            </button>
-            <button
-              className="main-btn delete-project"
-              // onClick={this.deleteTask.bind(this, taskId)}
-            >
-              Очистить поле ввода
-            </button>
-          </div>
-        </form>
-      );
+    if (this.props.editTask && this.props.parts.partLoading === true)
+      return <Spinner />;
+    else if (this.props.editTask && this.props.parts.partLoading === false) {
+      let part = this.props.part;
+      let content;
+      if (part.length === 0) {
+        content = "";
+        const { name, email } = this.props.auth.user;
+        return (
+          <form className="modal" style={{ height: "750px" }}>
+            <span className="close-modal" onClick={this.onClose}>
+              &times;
+            </span>
+            <h1 className="header">{this.state.partName}</h1>
+            <div className="form-group">
+              <label>
+                <Editor
+                  editorState={editorState}
+                  wrapperClassName="demo-wrapper"
+                  editorClassName="demo-editor"
+                  onEditorStateChange={this.onEditorStateChange}
+                />
+              </label>
+            </div>
+            <div>
+              <button
+                className="main-btn update-project"
+                type="button"
+                onClick={this.createPart}
+              >
+                Сохранить информацию
+              </button>
+              <button
+                className="main-btn delete-project"
+                // onClick={this.deleteTask.bind(this, taskId)}
+              >
+                Очистить поле ввода
+              </button>
+            </div>
+          </form>
+        );
+      } else {
+        content = part[0].content;
+        console.log(content)
+        const { name, email } = this.props.auth.user;
+        return (
+          <form className="modal" style={{ height: "750px" }}>
+            <span className="close-modal" onClick={this.onClose}>
+              &times;
+            </span>
+            <h1 className="header">{this.state.partName}</h1>
+            <div className="form-group">
+              <label>
+                <Editor
+                  // editorState={EditorState.createWithContent(
+                  //   convertFromRaw(JSON.parse(content))
+                  // )}
+                  editorState={editorState}
+                  wrapperClassName="demo-wrapper"
+                  editorClassName="demo-editor"
+                  onEditorStateChange={this.onEditorStateChange}
+                />
+              </label>
+            </div>
+            <div>
+              <button
+                className="main-btn update-project"
+                type="button"
+                onClick={this.updatePart}
+              >
+                Сохранить информацию
+              </button>
+              <button
+                className="main-btn delete-project"
+                // onClick={this.deleteTask.bind(this, taskId)}
+              >
+                Очистить поле ввода
+              </button>
+            </div>
+          </form>
+        );
+      }
     }
 
     // Edit tz info modal
@@ -488,7 +544,6 @@ class Modal extends Component {
             />
             <div className="form-label">Теги технического задания</div>
             <CreatableSelect
-              onChange={console.log(this.state.tzTags)}
               defaultValue={this.state.tzTags}
               isMulti
               options={tags}
@@ -573,6 +628,7 @@ const mapStateToProps = (state) => ({
   gosts: state.gosts,
   tags: state.tags,
   part: state.parts.part,
+  parts: state.parts,
 });
 
 export default connect(mapStateToProps, {
@@ -590,4 +646,5 @@ export default connect(mapStateToProps, {
   createTask,
   deleteTask,
   updateTask,
+  updatePart
 })(withRouter(Modal));
